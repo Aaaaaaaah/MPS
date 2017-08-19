@@ -15,14 +15,14 @@ program mps
 
     call init
 
-    !do t=1,100
+    do t=1,100
     call update
-    !end do
+    end do
 
-    !do t=1,100
+    do t=1,100
     call update_L
     call update_R
-    !end do
+    end do
 
     call save_data
 
@@ -61,6 +61,8 @@ contains
         L = contract(L,['tmp.right'],tmp,['tmp.left'])
         call L%setName('tmp.right','L.2')
 
+        L = L/(L%dmaxmin('maxabs'))
+
     end subroutine update_L
 
     subroutine update_R()
@@ -94,10 +96,13 @@ contains
         R = contract(R,['tmp.right'],tmp,['tmp.left'])
         call R%setName('tmp.right','R.2')
 
+        R = R/(R%dmaxmin('maxabs'))
+
     end subroutine update_R
 
     subroutine Energy()
         type(Tensor) :: xx, xHx, tmp
+
 
         tmp = eye(EAB,D,D)
         call tmp%setName(1,'tmp.left')
