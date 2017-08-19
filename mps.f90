@@ -2,7 +2,7 @@ program mps
     use tools
     use tensor_type
 
-    integer      :: D = 16, t
+    integer      :: D = 8, t
 
     type(tensor) :: expH    ! Hamiltonian
     type(tensor) :: H       ! Hamiltonian
@@ -160,7 +160,7 @@ contains
 
         ! Initialize Hamiltonian
         call expH%allocate([2,2,2,2],'real')
-        expH = reshape([0.999,0.,0.,0.,0.,1.001,-0.002,0.,0.,-0.002,1.001,0.,0.,0.,0.,0.999],[2,2,2,2])
+        expH = reshape([0.99999,0.,0.,0.,0.,1.00001,-0.00002,0.,0.,-0.00002,1.00001,0.,0.,0.,0.,0.99999],[2,2,2,2])
         call expH%setName(1,"expH.A1")
         call expH%setName(2,"expH.B1")
         call expH%setName(3,"expH.A2")
