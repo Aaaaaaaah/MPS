@@ -2,7 +2,7 @@ program mps
     use tools
     use tensor_type
 
-    integer      :: D = 8, t
+    integer      :: D = 16, t
 
     type(tensor) :: expH    ! Hamiltonian
     type(tensor) :: H       ! Hamiltonian
@@ -18,6 +18,9 @@ program mps
 
     do t=1,1000
     call update
+    end do
+
+    do t=1,1000
     call update_L
     call update_R
     end do
@@ -120,7 +123,7 @@ contains
         xHx = contract(xHx,['tmp.right','R.2'],B,['B.left','B.right'])
         call xHx%setName('B.phy','B.2')
 
-        call xHx%write(6)
+        !call xHx%write(6)
         print *, (xHx.ddot.H)/(xHx.ddot.II)
 
     end subroutine Energy
@@ -157,7 +160,7 @@ contains
 
         ! Initialize Hamiltonian
         call expH%allocate([2,2,2,2],'real')
-        expH = reshape([0.99,0.,0.,0.,0.,1.01,0.98,0.,0.,0.98,1.01,0.,0.,0.,0.,0.99],[2,2,2,2])
+        expH = reshape([0.999,0.,0.,0.,0.,1.001,-0.002,0.,0.,-0.002,1.001,0.,0.,0.,0.,0.999],[2,2,2,2])
         call expH%setName(1,"expH.A1")
         call expH%setName(2,"expH.B1")
         call expH%setName(3,"expH.A2")
