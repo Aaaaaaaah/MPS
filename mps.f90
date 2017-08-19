@@ -16,18 +16,14 @@ program mps
 
     call init
 
-    do t=1,100
+    do t=1,1000
     call update
-    end do
-
-    do t=1,100
     call update_L
     call update_R
     end do
+    call Energy
 
     call save_data
-
-    call Energy
 
 contains
 
