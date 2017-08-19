@@ -15,14 +15,14 @@ program mps
 
     call init
 
-    do t=1,100
+    !do t=1,100
     call update
-    end do
+    !end do
 
-    do t=1,100
+    !do t=1,100
     call update_L
     call update_R
-    end do
+    !end do
 
     call save_data
 
@@ -231,7 +231,9 @@ contains
             call EAB%read(1)
             close(1)
         else
-            call EAB%random()
+            do i=1,D
+            call EAB%setValue([i],1.)
+            end do
         endif
 
         call EBA%allocate([D],'real')
@@ -241,13 +243,16 @@ contains
             call EBA%read(1)
             close(1)
         else
-            call EBA%random()
+            do i=1,D
+            call EBA%setValue([i],1.)
+            end do
         endif
 
     end subroutine init
 
     subroutine update()
         type(tensor) :: tmp, acu, SVD(3)
+        integer      :: i
 
         ! Contract
         tmp = eye(EBA,D,D)
@@ -288,7 +293,7 @@ contains
         call A%setName(3,'A.right')
         call B%setName(1,'B.left')
 
-        tmp = eye(EAB,D,D)
+        tmp = eye(EBA,D,D)
         tmp = tmp%invTensor()
         call tmp%setName(1,'A.left')
         call tmp%setName(2,'B.right')
@@ -343,7 +348,7 @@ contains
         call B%setName(3,'B.right')
         call A%setName(1,'A.left')
 
-        tmp = eye(EBA,D,D)
+        tmp = eye(EAB,D,D)
         tmp = tmp%invTensor()
         call tmp%setName(1,'B.left')
         call tmp%setName(2,'A.right')
