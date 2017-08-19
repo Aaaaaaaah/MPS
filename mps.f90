@@ -6,6 +6,7 @@ program mps
 
     type(tensor) :: expH    ! Hamiltonian
     type(tensor) :: H       ! Hamiltonian
+    type(tensor) :: II      ! Hamiltonian
     type(tensor) :: A       ! A
     type(tensor) :: B       ! B
     type(tensor) :: EAB     ! Environment between A and B
@@ -101,33 +102,30 @@ contains
     end subroutine update_R
 
     subroutine Energy()
-        type(Tensor) :: xx, xHx, tmp
-
+        type(Tensor) :: xHx, tmp
 
         tmp = eye(EAB,D,D)
         call tmp%setName(1,'tmp.left')
         call tmp%setName(2,'tmp.right')
 
         xHx = contract(L,['L.1'],A,['A.left'])
+        call xHx%setName('A.phy','A.1')
         xHx = contract(xHx,['A.right'],tmp,['tmp.left'])
         xHx = contract(xHx,['tmp.right'],tmp,['tmp.left'])
+            !call xHx%setName('A.right','tmp.right')
         xHx = contract(xHx,['tmp.right'],B,['B.left'])
-        xHx = contract(xHx,['A.phy','B.phy'],H,['A.1','B.1'])
-        xHx = contract(xHx,['A.2','L.2'],A,['A.phy','A.left'])
+        call xHx%setName('B.phy','B.1')
+        xHx = contract(xHx,['B.right'],R,['R.1'])
+        xHx = contract(xHx,['L.2'],A,['A.left'])
+        call xHx%setName('A.phy','A.2')
         xHx = contract(xHx,['A.right'],tmp,['tmp.left'])
         xHx = contract(xHx,['tmp.right'],tmp,['tmp.left'])
-        xHx = contract(xHx,['B.2','tmp.right'],B,['B.phy','B.left'])
+            !call xHx%setName('A.right','tmp.right')
+        xHx = contract(xHx,['tmp.right','R.2'],B,['B.left','B.right'])
+        call xHx%setName('B.phy','B.2')
 
-        xx = contract(L,['L.1'],A,['A.left'])
-        xx = contract(xx,['A.right'],tmp,['tmp.left'])
-        xx = contract(xx,['tmp.right'],tmp,['tmp.left'])
-        xx = contract(xx,['tmp.right'],B,['B.left'])
-        xx = contract(xx,['A.phy','L.2'],A,['A.phy','A.left'])
-        xx = contract(xx,['A.right'],tmp,['tmp.left'])
-        xx = contract(xx,['tmp.right'],tmp,['tmp.left'])
-        xx = contract(xx,['B.phy','tmp.right'],B,['B.phy','B.left'])
-
-        print *,(xHx.ddot.R)/(xx.ddot.R)
+        call xHx%write(6)
+        print *, (xHx.ddot.H)/(xHx.ddot.II)
 
     end subroutine Energy
 
@@ -163,7 +161,7 @@ contains
 
         ! Initialize Hamiltonian
         call expH%allocate([2,2,2,2],'real')
-        expH = reshape([0.9975031,1.,1.,1.,1.,1.00250316,0.99501246,1.,1.,0.99501246,1.00250316,1.,1.,1.,1.,0.9975031],[2,2,2,2])
+        expH = reshape([0.99,0.,0.,0.,0.,1.01,0.98,0.,0.,0.98,1.01,0.,0.,0.,0.,0.99],[2,2,2,2])
         call expH%setName(1,"expH.A1")
         call expH%setName(2,"expH.B1")
         call expH%setName(3,"expH.A2")
@@ -176,6 +174,13 @@ contains
         call H%setName(3,"A.2")
         call H%setName(4,"B.2")
 
+        call II%allocate([2,2,2,2],'real')
+        II = reshape([1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,1.],[2,2,2,2])
+        call II%setName(1,"A.1")
+        call II%setName(2,"B.1")
+        call II%setName(3,"A.2")
+        call II%setName(4,"B.2")
+
         call L%allocate([D,D],'real')
         inquire( file=trim('L.dat'), exist=f)
         if(f) then
@@ -184,6 +189,7 @@ contains
             close(1)
         else
             call L%random()
+            L = L - 0.5
             call L%setName(1,"L.1")
             call L%setName(2,"L.2")
         endif
@@ -196,6 +202,7 @@ contains
             close(1)
         else
             call R%random()
+            R = R - 0.5
             call R%setName(1,"R.1")
             call R%setName(2,"R.2")
         endif
@@ -209,6 +216,7 @@ contains
             close(1)
         else
             call A%random()
+            A = A - 0.5
             call A%setName(1,"A.left")
             call A%setName(2,"A.right")
             call A%setName(3,"A.phy")
@@ -223,6 +231,7 @@ contains
             close(1)
         else
             call B%random()
+            B = B - 0.5
             call B%setName(1,"B.left")
             call B%setName(2,"B.right")
             call B%setName(3,"B.phy")
