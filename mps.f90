@@ -2,7 +2,9 @@ program mps
     use tools
     use tensor_type
 
-    integer      :: D = 8, t
+    integer      :: D = 8, t, T1 = 1000, T2 = 1000
+    real         :: ep = 0.00001
+    character*10 :: arg
 
     type(tensor) :: expH    ! Hamiltonian
     type(tensor) :: H       ! Hamiltonian
@@ -14,19 +16,30 @@ program mps
     type(tensor) :: L       ! Left
     type(tensor) :: R       ! Right
 
+    if (iargc()>=1) then
+        call getarg(1, arg)
+        read(arg,*) ep
+    end if
+    if (iargc()==3) then
+        call getarg(2, arg)
+        read(arg,*) T1
+        call getarg(3, arg)
+        read(arg,*) T2
+    end if
+
     call init
 
-    do t=1,1000
+    do t=1, T1
     call update
     end do
 
-    do t=1,1000
+    do t=1, T2
     call update_L
     call update_R
     end do
     call Energy
 
-    call save_data
+    !call save_data
 
 contains
 
@@ -102,6 +115,7 @@ contains
 
     subroutine Energy()
         type(Tensor) :: xHx, tmp
+        real*8       :: AB, BA
 
         tmp = eye(EAB,D,D)
         call tmp%setName(1,'tmp.left')
@@ -124,8 +138,61 @@ contains
         call xHx%setName('B.phy','B.2')
 
         !call xHx%write(6)
-        print *, (xHx.ddot.H)/(xHx.ddot.II)
+        AB = (xHx.ddot.H)/(xHx.ddot.II)
 
+        xHx = contract(L,['L.1'],A,['A.left'])
+        call xHx%setName('A.phy','A.phyt')
+        xHx = contract(xHx,['A.right'],tmp,['tmp.left'])
+        xHx = contract(xHx,['tmp.right'],tmp,['tmp.left'])
+        xHx = contract(xHx,['tmp.right'],B,['B.left'])
+        call xHx%setName('B.phy','B.1')
+
+        tmp = eye(EBA,D,D)
+        call tmp%setName(1,'tmp.left')
+        call tmp%setName(2,'tmp.right')
+
+        xHx = contract(xHx,['B.right'],tmp,['tmp.left'])
+        xHx = contract(xHx,['tmp.right'],tmp,['tmp.left'])
+        xHx = contract(xHx,['tmp.right'],A,['A.left'])
+        call xHx%setName('A.phy','A.1')
+
+        tmp = eye(EAB,D,D)
+        call tmp%setName(1,'tmp.left')
+        call tmp%setName(2,'tmp.right')
+
+        xHx = contract(xHx,['A.right'],tmp,['tmp.left'])
+        xHx = contract(xHx,['tmp.right'],tmp,['tmp.left'])
+        xHx = contract(xHx,['tmp.right'],B,['B.left'])
+        call xHx%setName('B.phy','B.phyt')
+
+        xHx = contract(xHx,['B.right'],R,['R.1'])
+
+        xHx = contract(xHx,['L.2','A.phyt'],A,['A.left','A.phy'])
+        xHx = contract(xHx,['A.right'],tmp,['tmp.left'])
+        xHx = contract(xHx,['tmp.right'],tmp,['tmp.left'])
+        xHx = contract(xHx,['tmp.right'],B,['B.left'])
+        call xHx%setName('B.phy','B.2')
+
+        tmp = eye(EBA,D,D)
+        call tmp%setName(1,'tmp.left')
+        call tmp%setName(2,'tmp.right')
+
+        xHx = contract(xHx,['B.right'],tmp,['tmp.left'])
+        xHx = contract(xHx,['tmp.right'],tmp,['tmp.left'])
+        xHx = contract(xHx,['tmp.right'],A,['A.left'])
+        call xHx%setName('A.phy','A.2')
+
+        tmp = eye(EAB,D,D)
+        call tmp%setName(1,'tmp.left')
+        call tmp%setName(2,'tmp.right')
+
+        xHx = contract(xHx,['A.right'],tmp,['tmp.left'])
+        xHx = contract(xHx,['tmp.right'],tmp,['tmp.left'])
+        xHx = contract(xHx,['tmp.right','B.phyt','R.2'],B,['B.left','B.phy','B.right'])
+
+        BA = (xHx.ddot.H)/(xHx.ddot.II)
+
+        print *, (AB + BA)/2.
     end subroutine Energy
 
     subroutine save_data()
@@ -155,12 +222,12 @@ contains
     end subroutine save_data
 
     subroutine init()
-        integer i
-        logical f
+        integer :: i
+        logical :: f
 
         ! Initialize Hamiltonian
         call expH%allocate([2,2,2,2],'real')
-        expH = reshape([0.99999,0.,0.,0.,0.,1.00001,-0.00002,0.,0.,-0.00002,1.00001,0.,0.,0.,0.,0.99999],[2,2,2,2])
+        expH = reshape([1.-ep,0.,0.,0.,0.,1.+ep,-2*ep,0.,0.,-2*ep,1.+ep,0.,0.,0.,0.,1.-ep],[2,2,2,2])
         call expH%setName(1,"expH.A1")
         call expH%setName(2,"expH.B1")
         call expH%setName(3,"expH.A2")
@@ -273,13 +340,11 @@ contains
         call tmp%setName(2,"tmp.right")
         acu = contract(tmp,['tmp.right'],A,['A.left'])
 
-
         tmp = eye(EAB,D,D)
         call tmp%setName(1,"tmp.left")
         call tmp%setName(2,"tmp.right")
         acu = contract(acu,['A.right'],tmp,['tmp.left'])
         acu = contract(acu,['tmp.right'],tmp,['tmp.left'])
-
 
         acu = contract(acu,['tmp.right'],B,['B.left'])
         tmp = eye(EBA,D,D)
@@ -319,7 +384,6 @@ contains
         EAB = EAB/(EAB%dmaxmin('maxabs'))
         EBA = EBA/(EBA%dmaxmin('maxabs'))
 
-
         !!!!!!!!!! another
 
         ! Contract
@@ -328,13 +392,11 @@ contains
         call tmp%setName(2,"tmp.right")
         acu = contract(tmp,['tmp.right'],B,['B.left'])
 
-
         tmp = eye(EBA,D,D)
         call tmp%setName(1,"tmp.left")
         call tmp%setName(2,"tmp.right")
         acu = contract(acu,['B.right'],tmp,['tmp.left'])
         acu = contract(acu,['tmp.right'],tmp,['tmp.left'])
-
 
         acu = contract(acu,['tmp.right'],A,['A.left'])
         tmp = eye(EAB,D,D)
@@ -375,6 +437,5 @@ contains
         EBA = EBA/(EBA%dmaxmin('maxabs'))
 
     end subroutine update
-
 
 end program mps
