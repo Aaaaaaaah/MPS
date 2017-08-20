@@ -213,6 +213,7 @@ contains
     subroutine init()
         integer :: i
         logical :: f
+
         if (iargc()>=1) then
             call getarg(1, arg)
             read(arg,*) ep
