@@ -39,7 +39,7 @@ program mps
     end do
     call Energy
 
-    !call save_data
+    call save_data
 
 contains
 
