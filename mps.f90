@@ -16,17 +16,6 @@ program mps
     type(tensor) :: L       ! Left
     type(tensor) :: R       ! Right
 
-    if (iargc()>=1) then
-        call getarg(1, arg)
-        read(arg,*) ep
-    end if
-    if (iargc()==3) then
-        call getarg(2, arg)
-        read(arg,*) T1
-        call getarg(3, arg)
-        read(arg,*) T2
-    end if
-
     call init
 
     do t=1, T1
@@ -224,6 +213,16 @@ contains
     subroutine init()
         integer :: i
         logical :: f
+        if (iargc()>=1) then
+            call getarg(1, arg)
+            read(arg,*) ep
+        end if
+        if (iargc()==3) then
+            call getarg(2, arg)
+            read(arg,*) T1
+            call getarg(3, arg)
+            read(arg,*) T2
+        end if
 
         ! Initialize Hamiltonian
         call expH%allocate([2,2,2,2],'real')
