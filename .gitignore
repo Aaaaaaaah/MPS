@@ -1,3 +1,4 @@
 *.out
 *.dat
 .ipynb_checkpoints/
+*.py
