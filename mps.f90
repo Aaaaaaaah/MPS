@@ -218,10 +218,14 @@ contains
             call getarg(1, arg)
             read(arg,*) ep
         end if
-        if (iargc()==3) then
+        if (iargc()>=2) then
             call getarg(2, arg)
-            read(arg,*) T1
+            read(arg,*) D
+        end if
+        if (iargc()==4) then
             call getarg(3, arg)
+            read(arg,*) T1
+            call getarg(4, arg)
             read(arg,*) T2
         end if
 
