@@ -1,5 +1,5 @@
 compile:
-	mpiifort $(FFLAGS) mps.f90 -lTensor -mkl -O0 -g
+	mpiifort $(FFLAGS) mps.f90 -lTensor -mkl
 run: compile
 	./a.out 0.1
 	./a.out 0.01
