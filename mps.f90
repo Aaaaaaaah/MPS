@@ -440,6 +440,107 @@ contains
         EAB = EAB/(EAB%dmaxmin('maxabs'))
         EBA = EBA/(EBA%dmaxmin('maxabs'))
 
+
+        ! Contract 2 BA
+        tmp = eye(EAB,D,D)
+        call tmp%setName(1,"tmp.left")
+        call tmp%setName(2,"tmp.right")
+        acu = contract(tmp,['tmp.right'],B,['B.left'])
+
+        tmp = eye(EBA,D,D)
+        call tmp%setName(1,"tmp.left")
+        call tmp%setName(2,"tmp.right")
+        acu = contract(acu,['B.right'],tmp,['tmp.left'])
+        acu = contract(acu,['tmp.right'],tmp,['tmp.left'])
+
+        acu = contract(acu,['tmp.right'],A,['A.left'])
+        tmp = eye(EAB,D,D)
+        call tmp%setName(1,"tmp.left")
+        call tmp%setName(2,"tmp.right")
+        acu = contract(acu,['A.right'],tmp,['tmp.left'])
+
+        acu = contract(acu,['B.phy','A.phy'],expH,['expH.B1','expH.A1'])
+
+        call acu%setName('tmp.left','B.left')
+        call acu%setName('tmp.right','A.right')
+        call acu%setName('expH.B2','B.phy')
+        call acu%setName('expH.A2','A.phy')
+
+        SVD=acu%SVDTensor('B','A',D)
+        B = SVD(1)
+        A = SVD(3)
+        EBA = SVD(2) !!!!!!!!! sqrt
+
+        do i = 1, D
+        call EBA%setValue([i],sqrt(EBA%di([i])))
+        end do
+
+        call B%setName(3,'B.right')
+        call A%setName(1,'A.left')
+
+        tmp = eye(EAB,D,D)
+        tmp = tmp%invTensor()
+        call tmp%setName(1,'B.left')
+        call tmp%setName(2,'A.right')
+
+        B = contract(B,['B.left'],tmp,['A.right'])
+        A = contract(A,['A.right'],tmp,['B.left'])
+
+        A = A/(A%dmaxmin('maxabs'))
+        B = B/(B%dmaxmin('maxabs'))
+        EAB = EAB/(EAB%dmaxmin('maxabs'))
+        EBA = EBA/(EBA%dmaxmin('maxabs'))
+
+        ! Contract 2 AB
+        tmp = eye(EBA,D,D)
+        call tmp%setName(1,"tmp.left")
+        call tmp%setName(2,"tmp.right")
+        acu = contract(tmp,['tmp.right'],A,['A.left'])
+
+        tmp = eye(EAB,D,D)
+        call tmp%setName(1,"tmp.left")
+        call tmp%setName(2,"tmp.right")
+        acu = contract(acu,['A.right'],tmp,['tmp.left'])
+        acu = contract(acu,['tmp.right'],tmp,['tmp.left'])
+
+        acu = contract(acu,['tmp.right'],B,['B.left'])
+        tmp = eye(EBA,D,D)
+        call tmp%setName(1,"tmp.left")
+        call tmp%setName(2,"tmp.right")
+        acu = contract(acu,['B.right'],tmp,['tmp.left'])
+
+        acu = contract(acu,['A.phy','B.phy'],expH,['expH.A1','expH.B1'])
+
+        call acu%setName('tmp.left','A.left')
+        call acu%setName('tmp.right','B.right')
+        call acu%setName('expH.A2','A.phy')
+        call acu%setName('expH.B2','B.phy')
+
+        SVD=acu%SVDTensor('A','B',D)
+        A = SVD(1)
+        B = SVD(3)
+        EAB = SVD(2) !!!!!!!!! sqrt
+
+        do i = 1, D
+        call EAB%setValue([i],sqrt(EAB%di([i])))
+        end do
+
+        call A%setName(3,'A.right')
+        call B%setName(1,'B.left')
+
+        tmp = eye(EBA,D,D)
+        tmp = tmp%invTensor()
+        call tmp%setName(1,'A.left')
+        call tmp%setName(2,'B.right')
+
+        A = contract(A,['A.left'],tmp,['B.right'])
+        B = contract(B,['B.right'],tmp,['A.left'])
+
+        A = A/(A%dmaxmin('maxabs'))
+        B = B/(B%dmaxmin('maxabs'))
+        EAB = EAB/(EAB%dmaxmin('maxabs'))
+        EBA = EBA/(EBA%dmaxmin('maxabs'))
+
     end subroutine update
 
 end program mps
