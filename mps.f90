@@ -104,7 +104,7 @@ contains
 
     subroutine Energy()
         type(Tensor) :: xHx, tmp
-        real*8       :: AB, BA
+        real         :: AB, BA
 
         tmp = eye(EAB,D,D)
         call tmp%setName(1,'tmp.left')
