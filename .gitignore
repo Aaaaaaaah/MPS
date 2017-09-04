@@ -1,6 +1,5 @@
 *.out
 *.dat
 .ipynb_checkpoints/
-*.py
 *.pbtxt
 events.out.tfevents.*
