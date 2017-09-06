@@ -10,7 +10,7 @@ from sklearn.utils.extmath import randomized_svd as svd
 
 D = 512
 ep = 0.1
-NI = 1
+NI = 0
 
 
 # In[3]:
@@ -46,7 +46,7 @@ def updateAB():
     AB = np.tensordot(EA,EB,[[1],[0]])
     HAB = np.tensordot(AB,expH,[[1,3],[0,1]])
     #U, S, V = np.linalg.svd(np.reshape(np.transpose(HAB,[0,2,1,3]),[2*D,2*D]))
-    U, S, V = svd(np.reshape(np.transpose(HAB,[0,2,1,3]),[2*D,2*D]),D,n_iter=NI)
+    U, S, V = svd(np.reshape(np.transpose(HAB,[0,2,1,3]),[2*D,2*D]),D,n_iter=NI,power_iteration_normalizer="none")
     ABnEAB = np.sqrt(S[:D])
     ABnA = np.transpose(np.reshape(U[:,:D],[D,2,D])*np.reshape(REBA,[D,1,1]),[0,2,1])
     ABnB = np.transpose(np.reshape(V[:D,:],[D,D,2])*np.reshape(REBA,[1,D,1]),[0,1,2])
@@ -63,7 +63,7 @@ def updateBA():
     BA = np.tensordot(EB,EA,[[1],[0]])
     HBA = np.tensordot(BA,expH,[[1,3],[0,1]])
     #U, S, V = np.linalg.svd(np.reshape(np.transpose(HBA,[0,2,1,3]),[2*D,2*D]))
-    U, S, V = svd(np.reshape(np.transpose(HBA,[0,2,1,3]),[2*D,2*D]),D,n_iter=NI)
+    U, S, V = svd(np.reshape(np.transpose(HBA,[0,2,1,3]),[2*D,2*D]),D,n_iter=NI,power_iteration_normalizer="none")
     BAnEBA = np.sqrt(S[:D])
     BAnB = np.transpose(np.reshape(U[:,:D],[D,2,D])*np.reshape(REAB,[D,1,1]),[0,2,1])
     BAnA = np.transpose(np.reshape(V[:D,:],[D,D,2])*np.reshape(REAB,[1,D,1]),[0,1,2])
