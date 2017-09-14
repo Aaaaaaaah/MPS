@@ -1,0 +1,57 @@
+\documentclass{article}
+\usepackage{hyperref}
+\usepackage{algorithmic}
+\hypersetup{colorlinks=true}
+
+\begin{document}
+
+\section{Truncated SVD}
+
+\subsection{Truncated}
+\paragraph{}
+As a test, 1-D infinite MPS costs $17.7 s$ to run, within $15.1 s$ calc \textbf{SVD}.
+
+\paragraph{}
+In TNSP, \textbf{SVD} call \textbf{xGESVD} from lapack, which calc \textbf{full SVD}.
+
+\paragraph{}
+Obviously, calculating truncation within SVD is better.
+
+\subsection{randomized SVD}
+\paragraph{}
+Ref: \url{https://arxiv.org/pdf/0909.4061.pdf}
+
+\paragraph{}
+To calc $U S V = A$, generate a low-rank matrix $Q$ first
+
+$B = Q^T A$, $A \approx QB$
+
+Then calc SVD of $U' S V = B$, $(QU') S V = A$
+
+\paragraph{}
+How to generate matrix $Q$?
+
+$\min ||A - QQ^TA||$
+or
+$\min(\mathrm{rank}(X) \le j) ||A-X||$
+
+There are several algorithm introduced in that paper.
+
+\paragraph{Randomized Ranger Finder}
+\begin{algorithmic}
+    \STATE $Q = \mathrm{GassianRandomMatrix}$()
+    \LOOP
+        \STATE $Q R = A Q$
+        \STATE $Q R = A^T Q$
+    \ENDLOOP
+    \STATE $Q R = A Q$
+\end{algorithmic}
+
+\paragraph{after implementation}
+$17s \rightarrow 9.1s$
+
+\paragraph{other things}
+
+strict of trancated SVD?
+
+\end{document}
