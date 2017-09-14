@@ -3,3 +3,6 @@
 .ipynb_checkpoints/
 *.pbtxt
 events.out.tfevents.*
+*.aux
+*.log
+*.pdf
